@@ -1,8 +1,5 @@
 # points class - represent a point and a list of points to navigate with pure pursuit
+from collections import namedtuple
 
-class Point:
-
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
+Point = namedtuple("Point", ["x", "y"])
 
