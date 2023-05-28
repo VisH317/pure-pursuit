@@ -91,10 +91,8 @@ def find_next_goal():
 
     goal_point, next = choose_goal_point(sol_list, sol_list_2, current_segment)
     if next: current_segment+=1
-        
+    return goal_point
 
-    
-    # loop through each line - check for intersection, check for segment restrictions, 
 
 def getHeading():
     pass
