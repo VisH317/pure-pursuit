@@ -23,6 +23,7 @@ pygame.draw.rect(screen, colors.BOT, rect)
 # state functions/vars
 
 current_segment = 0
+angle = 0
 
 def compute_quadratic_coefficients(m1, b1, p, q, idx):
     a = m1**2+1
@@ -93,9 +94,15 @@ def find_next_goal():
     if next: current_segment+=1
     return goal_point
 
+# setup bang bang movement
 
-def getHeading():
-    pass
+def move_to_point():
+
+
+def getHeading(start: Point, loc: Point):
+    y = loc.y - start.y
+    x = loc.x - start.x
+    return math.atan2(y, x) * 180 / math.pi
 
 
 for ix,point in enumerate(point_list):
