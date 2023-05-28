@@ -62,7 +62,7 @@ def find_next_goal():
         m2 = (point_list[current_segment+2].y - point_list[current_segment+1].y)/(point_list[current_segment+2].x - point_list[current_segment+1].x)
         b2 = (point_list[current_segment+1].y) / (point_list[current_segment+1].x*m1)
         sol_list_2 = compute_quadratic_coefficients(m2, b2, p, q)
-        sol_list += sol_list_2
+        sol_list = sol_list_2 + sol_list
 
     
     # loop through each line - check for intersection, check for segment restrictions, 
