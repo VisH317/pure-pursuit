@@ -8,7 +8,7 @@ import math
 # CONFIG VARS
 RADIUS = 50
 
-point_list: List[Point] = [Point(300, 300), Point(275, 300), Point(275, 100), Point(300, 100), Point(400, 300)]
+point_list: List[Point] = [Point(300, 300), Point(225, 300), Point(575, 200), Point(300, 100), Point(400, 300)]
 
 pygame.init()
 
