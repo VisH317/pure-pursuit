@@ -8,7 +8,7 @@ import math
 # CONFIG VARS
 RADIUS = 50
 
-point_list: List[Point] = [Point(300, 300), Point(100, 300), Point(100, 100), Point(300, 100), Point(300, 300)]
+point_list: List[Point] = [Point(300, 300), Point(100, 300), Point(100, 100), Point(300, 100), Point(400, 300)]
 
 pygame.init()
 
@@ -24,12 +24,42 @@ pygame.draw.rect(screen, colors.BOT, rect)
 
 current_segment = 0
 angle = 0
+current_point = Point(300, 300)
 
 def compute_quadratic_coefficients(m1, b1, p, q, idx):
     a = m1**2+1
     b = m1*b1 - m1*q - p
     c = q**2 - RADIUS**2 + p**2 - 2 * b1 * q + b1**2
     return compute_quadratic_formula(a,b,c, m1, b1, idx)
+
+def compute_coefficients(x1, x2, y1, y2, p, q):
+    dx = x2-x1
+    dy = y2-y1
+    dr = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
+    D = x1*y2 - x2*y1
+
+    try:
+        disc = math.sqrt(RADIUS**2 * dr**2 - D**2)
+    except:
+        raise Exception("Too far")
+
+
+    # solving for x coordinate
+
+    b = dx * disc * (-1 if dy<0 else 1)
+    ans_x_1 = ((D*dy)+b)/(dr**2)
+    ans_x_2 = ((D*dy)-b)/(dr**2)
+
+    # solving for y coordinate
+    b = math.abs(dy) * disc
+    ans_y_1 = (-D*dx+b)/(dr**2)
+    ans_y_2 = (-D*dx-b)/(dr**2)
+
+    if ans_x_1==ans_x_2:
+        return [Point(ans_x_1, ans_y_1)]
+    
+    return [Point(ans_x_1, ans_y_1), Point(ans_x_2, ans_y_2)]
+
 
 def compute_quadratic_formula(a, b, c, m, b1, idx):
     solutions_list = []
@@ -76,19 +106,22 @@ def choose_goal_point(sol_list, sol_list_2, idx):
 
 
 def find_next_goal():
+    global current_segment
     p, q = rect.center
     
     #find current segment information
     m1 = (point_list[current_segment+1].y - point_list[current_segment].y)/(point_list[current_segment+1].x - point_list[current_segment].x)
-    b1 = (point_list[current_segment].y) / (point_list[current_segment].x*m1)
+    b1 = (point_list[current_segment].y) - (point_list[current_segment].x*m1)
 
-    sol_list = compute_quadratic_coefficients(m1, b1, p, q, current_segment)
+    # sol_list = compute_coefficients(m1, b1, p, q, current_segment)
+    sol_list = compute_coefficients(point_list[current_segment].x, point_list[current_segment].y, point_list[current_segment+1].x, point_list[current_segment+1].y, p, q)
 
     m2 = b2 = None
     if current_segment<len(point_list)-2:
         m2 = (point_list[current_segment+2].y - point_list[current_segment+1].y)/(point_list[current_segment+2].x - point_list[current_segment+1].x)
         b2 = (point_list[current_segment+1].y) / (point_list[current_segment+1].x*m1)
-        sol_list_2 = compute_quadratic_coefficients(m2, b2, p, q, current_segment+1)
+        # sol_list_2 = compute_quadratic_coefficients(m2, b2, p, q, current_segment+1)
+        sol_list = compute_coefficients(point_list[current_segment+1].x, point_list[current_segment+1].y, point_list[current_segment+2].x, point_list[current_segment+2].y, p, q)
 
     goal_point, next = choose_goal_point(sol_list, sol_list_2, current_segment)
     if next: current_segment+=1
@@ -97,7 +130,7 @@ def find_next_goal():
 # setup bang bang movement
 
 def move_to_point():
-
+    pass
 
 def getHeading(start: Point, loc: Point):
     y = loc.y - start.y
@@ -110,6 +143,9 @@ for ix,point in enumerate(point_list):
     pygame.draw.line(screen, colors.LINE, point, point_list[ix+1])
 
 # pygame.draw.circle(screen, colors.LINE, rect.center, RADIUS, width=0)
+
+first_point = find_next_goal()
+pygame.draw.line(screen, colors.PATH, Point(300, 300), first_point)
 
 running = True
 
