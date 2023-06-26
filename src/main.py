@@ -8,7 +8,7 @@ import math
 # CONFIG VARS
 RADIUS = 50
 
-point_list: List[Point] = [Point(300, 300), Point(100, 300), Point(100, 100), Point(300, 100), Point(400, 300)]
+point_list: List[Point] = [Point(300, 300), Point(275, 300), Point(275, 100), Point(300, 100), Point(400, 300)]
 
 pygame.init()
 
@@ -32,16 +32,17 @@ def compute_quadratic_coefficients(m1, b1, p, q, idx):
     c = q**2 - RADIUS**2 + p**2 - 2 * b1 * q + b1**2
     return compute_quadratic_formula(a,b,c, m1, b1, idx)
 
-def compute_coefficients(x1, x2, y1, y2, p, q):
+def compute_coefficients(x1, y1, x2, y2, p, q):
     dx = x2-x1
     dy = y2-y1
     dr = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-    D = x1*y2 - x2*y1
+    D = (x1-p)*(y2-q) - (x2-p)*(y1-q)
 
     try:
+        print(RADIUS**2 * dr**2 - D**2)
         disc = math.sqrt(RADIUS**2 * dr**2 - D**2)
     except:
-        raise Exception("Too far")
+        return []
 
 
     # solving for x coordinate
@@ -49,16 +50,17 @@ def compute_coefficients(x1, x2, y1, y2, p, q):
     b = dx * disc * (-1 if dy<0 else 1)
     ans_x_1 = ((D*dy)+b)/(dr**2)
     ans_x_2 = ((D*dy)-b)/(dr**2)
+    print("stuff: ", dr, ", ", D, ", ", ans_x_1,", ", disc, ", ", b, ", ", dx)
 
     # solving for y coordinate
-    b = math.abs(dy) * disc
+    b = abs(dy) * disc
     ans_y_1 = (-D*dx+b)/(dr**2)
     ans_y_2 = (-D*dx-b)/(dr**2)
 
-    if ans_x_1==ans_x_2:
-        return [Point(ans_x_1, ans_y_1)]
+    if disc==0:
+        return [Point(ans_x_1+p, ans_y_1+q)]
     
-    return [Point(ans_x_1, ans_y_1), Point(ans_x_2, ans_y_2)]
+    return [Point(ans_x_1+p, ans_y_1+q), Point(ans_x_2+p, ans_y_2+q)]
 
 
 def compute_quadratic_formula(a, b, c, m, b1, idx):
@@ -87,10 +89,11 @@ def compute_quadratic_formula(a, b, c, m, b1, idx):
     return solutions_list
 
 def is_closer(target: Point, first: Point, second: Point):
+    print("first: ", first, ", second: ", second, ", target: ", target)
     dist1 = math.sqrt((target.x-first.x)**2+(target.y-first.y)**2)
     dist2 = math.sqrt((target.x-second.x)**2+(target.y-second.y)**2)
 
-    return dist1>dist2
+    return dist1<dist2
 
 
 def choose_goal_point(sol_list, sol_list_2, idx):
@@ -118,10 +121,12 @@ def find_next_goal():
 
     m2 = b2 = None
     if current_segment<len(point_list)-2:
-        m2 = (point_list[current_segment+2].y - point_list[current_segment+1].y)/(point_list[current_segment+2].x - point_list[current_segment+1].x)
-        b2 = (point_list[current_segment+1].y) / (point_list[current_segment+1].x*m1)
+        # m2 = (point_list[current_segment+2].y - point_list[current_segment+1].y)/(point_list[current_segment+2].x - point_list[current_segment+1].x)
+        # b2 = (point_list[current_segment+1].y) / (point_list[current_segment+1].x*m1)
         # sol_list_2 = compute_quadratic_coefficients(m2, b2, p, q, current_segment+1)
-        sol_list = compute_coefficients(point_list[current_segment+1].x, point_list[current_segment+1].y, point_list[current_segment+2].x, point_list[current_segment+2].y, p, q)
+        sol_list_2 = compute_coefficients(point_list[current_segment+1].x, point_list[current_segment+1].y, point_list[current_segment+2].x, point_list[current_segment+2].y, p, q)
+
+    print(sol_list)
 
     goal_point, next = choose_goal_point(sol_list, sol_list_2, current_segment)
     if next: current_segment+=1
@@ -145,6 +150,8 @@ for ix,point in enumerate(point_list):
 # pygame.draw.circle(screen, colors.LINE, rect.center, RADIUS, width=0)
 
 first_point = find_next_goal()
+print(first_point)
+pygame.draw.circle(screen, colors.PATH, Point(300, 300), 50, width=2)
 pygame.draw.line(screen, colors.PATH, Point(300, 300), first_point)
 
 running = True
